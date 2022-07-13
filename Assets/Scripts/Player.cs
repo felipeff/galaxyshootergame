@@ -7,6 +7,9 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _speed = 3.5f;
     [SerializeField]
+    private float _speedMultiplier = 2f;
+
+    [SerializeField]
     private float _fireRate = 0.5f;
     private float _canFire = -1f;
 
@@ -14,6 +17,8 @@ public class Player : MonoBehaviour
     private GameObject _laserPrefab;
     [SerializeField]
     private GameObject _tripleshotPrefab;
+    [SerializeField]
+    private GameObject _shieldVisualizer;
    
     [SerializeField]
     private int _lives = 3;
@@ -21,6 +26,7 @@ public class Player : MonoBehaviour
     private SpawnManager _spawnManager;
     
     private bool _isTripleShotActive = false;
+    private bool _isShieldActive = false;
 
     // Start is called before the first frame update
     void Start()
@@ -91,6 +97,14 @@ public class Player : MonoBehaviour
 
     public void Damage()
     {
+        // if shield is active then we get a free hit
+        if (_isShieldActive)
+        {
+            _isShieldActive = false;
+            _shieldVisualizer.SetActive(false);
+            return;
+        }
+
         _lives--;
 
         if(_lives <= 0)
@@ -108,9 +122,31 @@ public class Player : MonoBehaviour
         StartCoroutine(TripleShotPowerDownRoutine());
     }
 
+
+    public void SpeedBoostActive()
+    {
+        _speed = _speed * _speedMultiplier;
+        StartCoroutine(SpeedBoostPowerDownRoutine());
+
+    }
+
+    public void ShieldActive()
+    {
+        _isShieldActive = true;
+        _shieldVisualizer.SetActive(true);
+
+    }
+
     IEnumerator TripleShotPowerDownRoutine()
     {
         yield return new WaitForSeconds(5f);
         _isTripleShotActive = false;
     }
+
+    IEnumerator SpeedBoostPowerDownRoutine()
+    {
+        yield return new WaitForSeconds(5f);
+        _speed = _speed / _speedMultiplier;
+    }
+
 }
