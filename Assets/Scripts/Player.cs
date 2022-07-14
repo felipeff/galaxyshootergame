@@ -24,9 +24,13 @@ public class Player : MonoBehaviour
     private int _lives = 3;
     
     private SpawnManager _spawnManager;
+    private UIManager _uiManager;
     
     private bool _isTripleShotActive = false;
     private bool _isShieldActive = false;
+
+    [SerializeField]
+    private int _score;
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +42,13 @@ public class Player : MonoBehaviour
         if(_spawnManager == null)
         {
             Debug.LogError("The Spawn Manager is NULL");
+        }
+
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+
+        if(_uiManager == null)
+        {
+            Debug.LogError("The UI Manager is NULL");
         }
         
     }
@@ -95,6 +106,7 @@ public class Player : MonoBehaviour
         }
     }
 
+
     public void Damage()
     {
         // if shield is active then we get a free hit
@@ -106,12 +118,20 @@ public class Player : MonoBehaviour
         }
 
         _lives--;
+        _uiManager.UpdateLives(_lives);
 
         if(_lives <= 0)
         {
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
         }
+    }
+
+
+    public void AddScore(int points)
+    {
+        _score += points;
+        _uiManager.UpdateScore(_score);
     }
 
     public void TripleShotActive()
