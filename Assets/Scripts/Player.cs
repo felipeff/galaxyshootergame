@@ -19,7 +19,9 @@ public class Player : MonoBehaviour
     private GameObject _tripleshotPrefab;
     [SerializeField]
     private GameObject _shieldVisualizer;
-   
+    [SerializeField]
+    private GameObject[] _engineDamage;
+
     [SerializeField]
     private int _lives = 3;
     
@@ -28,6 +30,8 @@ public class Player : MonoBehaviour
     
     private bool _isTripleShotActive = false;
     private bool _isShieldActive = false;
+
+    
 
     [SerializeField]
     private int _score;
@@ -120,7 +124,13 @@ public class Player : MonoBehaviour
         _lives--;
         _uiManager.UpdateLives(_lives);
 
-        if(_lives <= 0)
+        if(_lives == 2)
+        {
+            _engineDamage[0].SetActive(true);
+        }else if(_lives == 1)
+        {
+            _engineDamage[1].SetActive(true);
+        }else if(_lives <= 0)
         {
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
@@ -145,7 +155,7 @@ public class Player : MonoBehaviour
 
     public void SpeedBoostActive()
     {
-        _speed = _speed * _speedMultiplier;
+        _speed *= _speedMultiplier;
         StartCoroutine(SpeedBoostPowerDownRoutine());
 
     }
@@ -166,7 +176,7 @@ public class Player : MonoBehaviour
     IEnumerator SpeedBoostPowerDownRoutine()
     {
         yield return new WaitForSeconds(5f);
-        _speed = _speed / _speedMultiplier;
+        _speed /= _speedMultiplier;
     }
 
 }
