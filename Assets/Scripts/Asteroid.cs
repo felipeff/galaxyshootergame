@@ -22,6 +22,7 @@ public class Asteroid : MonoBehaviour
         {
             Debug.LogError("Spawn Manager is NULL");
         }
+
     }
 
     // Update is called once per frame

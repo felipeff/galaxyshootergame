@@ -10,12 +10,22 @@ public class Enemy : MonoBehaviour
     private Player _player;
     private Animator _anim;
 
+    private AudioSource _audioSource;
+
+    private float _fireRate = 3.0f;
+    private float _canFire = -1;
+
+    [SerializeField]
+    private GameObject _laserPrefab;
+
+
 
     // Start is called before the first frame update
     void Start()
     {
         _player = GameObject.Find("Player").GetComponent<Player>();
         _anim = gameObject.GetComponent<Animator>();
+        _audioSource = GetComponent<AudioSource>();
 
         if(_player == null)
         {
@@ -26,14 +36,39 @@ public class Enemy : MonoBehaviour
         {
             Debug.LogError("Animator is NULL");
         }
+
+        if(_audioSource == null)
+        {
+            Debug.LogError("Audio Source on Enemy is NULL");
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
+        CalculateMovement();
+
+        if(Time.time > _canFire)
+        {
+            _fireRate = Random.Range(3f, 5f);
+            _canFire = Time.time + _fireRate;
+            GameObject enemyLaser = Instantiate(_laserPrefab, transform.position, Quaternion.identity);
+
+            Laser[] lasers = enemyLaser.GetComponentsInChildren<Laser>();
+
+            foreach (Laser laser in lasers)
+            {
+                laser.SetEnemyLaser();
+            }
+
+        }
+    }
+
+    private void CalculateMovement()
+    {
         transform.Translate(Vector3.down * _speed * Time.deltaTime);
 
-        if(transform.position.y < -6f)
+        if (transform.position.y < -6f)
         {
             transform.position = new Vector3(Random.Range(-9.4f, 9.4f), 6f, 0);
         }
@@ -58,6 +93,7 @@ public class Enemy : MonoBehaviour
             }
           
             Destroy(other.gameObject);
+
         }
 
         if (other.CompareTag("Player") || other.CompareTag("Laser"))
@@ -71,6 +107,7 @@ public class Enemy : MonoBehaviour
 
             _anim.SetTrigger("OnEnemyDeath");
             StartCoroutine(CheckAnimationPosition());
+            _audioSource.Play();
         }
 
     }

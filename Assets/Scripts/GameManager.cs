@@ -5,8 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
+    
     private bool _isGameOver = false;
+
+    [SerializeField]
+    private GameObject _pausePanel;
 
     public void GameOver()
     {
@@ -19,5 +22,25 @@ public class GameManager : MonoBehaviour
         {
             SceneManager.LoadScene("Game");
         }
+        
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            _pausePanel.SetActive(true);
+            Time.timeScale = 0f;
+        }
     }
+
+    public void ResumeGame()
+    {
+        _pausePanel.SetActive(false);
+        Time.timeScale = 1f;
+    }
+
+
+    
 }

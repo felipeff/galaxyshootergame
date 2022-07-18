@@ -22,6 +22,10 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject[] _engineDamage;
 
+    private AudioSource _audioSource;
+    [SerializeField]
+    private AudioClip _laserSoundClip;
+
     [SerializeField]
     private int _lives = 3;
     
@@ -31,6 +35,8 @@ public class Player : MonoBehaviour
     private bool _isTripleShotActive = false;
     private bool _isShieldActive = false;
 
+    private Animator _anim;
+
     
 
     [SerializeField]
@@ -39,22 +45,35 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Set the initial player position
-        transform.position = new Vector3(0f, 0f, 0f);
         _spawnManager = GameObject.Find("Spawn_Manager").GetComponent<SpawnManager>();
+        _audioSource = GetComponent<AudioSource>();
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        _anim = GetComponent<Animator>();
 
-        if(_spawnManager == null)
+        if (_spawnManager == null)
         {
             Debug.LogError("The Spawn Manager is NULL");
         }
 
-        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
 
         if(_uiManager == null)
         {
             Debug.LogError("The UI Manager is NULL");
         }
-        
+
+        if(_audioSource == null)
+        {
+            Debug.LogError("AudioSource on the Player is NULL");
+        }
+
+        if(_anim == null)
+        {
+            Debug.LogError("Animator on Player is NULL");
+        }
+
+        // Set the initial player position
+        transform.position = new Vector3(0f, 0f, 0f);
+
     }
 
     // Update is called once per frame
@@ -83,7 +102,8 @@ public class Player : MonoBehaviour
             Instantiate(_tripleshotPrefab, transform.position, Quaternion.identity);    
         }
 
-
+        _audioSource.clip = _laserSoundClip;
+        _audioSource.Play();
     }
 
     void CalculateMovement()
@@ -91,10 +111,25 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        //transform.Translate(Vector3.right * horizontalInput * Time.deltaTime * _speed);
-        //transform.Translate(Vector3.up * verticalInput * Time.deltaTime * _speed);
 
-        // this approach only uses 1 vector3 object so it's technically a little bit more efficient
+        if(horizontalInput < 0)
+        {
+            // moving left
+            _anim.SetBool("TurnLeft", true);
+            _anim.SetBool("TurnRight", false);
+
+        }else if(horizontalInput > 0)
+        {
+            // moving right
+            _anim.SetBool("TurnLeft", false);
+            _anim.SetBool("TurnRight", true);
+        }
+        else
+        {
+            _anim.SetBool("TurnLeft", false);
+            _anim.SetBool("TurnRight", false);
+        }
+
         transform.Translate(new Vector3(horizontalInput, verticalInput, 0) * _speed * Time.deltaTime);
          
         // Mathf.Clamp ensures that the value stays between the bounds specified.
@@ -132,6 +167,7 @@ public class Player : MonoBehaviour
             _engineDamage[1].SetActive(true);
         }else if(_lives <= 0)
         {
+            _uiManager.CheckForBestScore(_score);
             _spawnManager.OnPlayerDeath();
             Destroy(this.gameObject);
         }
